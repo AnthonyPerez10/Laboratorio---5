@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualBasic;
+using Registro_de_Alumnos.Clases;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -11,6 +13,9 @@ namespace Registro_de_Alumnos
     {
 
         //ID: 1 y 11
+        private CRUD repo = new CRUD();
+        private List<Alumno> alumnosActuales = new List<Alumno>();
+        private int idSeleccionado = 0;
 
         public Form1()
         {
@@ -34,17 +39,6 @@ namespace Registro_de_Alumnos
             txtInsertarApellido.KeyPress += SoloLetras;
         }
 
-        //Vectores para acumular la informacion 
-        string[] nombre = new string[50];
-        string[] apellido = new string[50];
-        string[] cedula = new string[50];
-        string[] carrera = new string[50];
-        string[] jornada = new string[50];
-        string[] semestre = new string[50];
-        string[] usuario = new string[50];
-        string[] contraseña = new string[50];
-
-        int contador = 0; //Indice actual
         private void Form1_Load(object sender, EventArgs e)
         {
             //Mensaje de ingreso
@@ -60,6 +54,7 @@ namespace Registro_de_Alumnos
                 Interaction.MsgBox("Codigo incorrecto. El programa se cerrara.",
                     MsgBoxStyle.Critical, "Acceso denegado");
                 this.Close();
+                return;
             }
 
             this.KeyPreview = true;
@@ -81,6 +76,8 @@ namespace Registro_de_Alumnos
             lstListaAlumnos.ScrollAlwaysVisible = true; // Scroll vertical siempre visible
             lstListaAlumnos.HorizontalScrollbar = true;  // Scroll horizontal si el texto es largo
             lstListaAlumnos.MultiColumn = false;         // Para que sea una sola columna vertical
+            CargarAlumnosEnListBox();
+
         }
         //Boton Guardar datos de nuevo estudiante
 
@@ -91,13 +88,6 @@ namespace Registro_de_Alumnos
 
         private void BtnGuardar_Click(object sender, EventArgs e)
         {
-            //Se manda un error al llegar al limite del arreglo 
-            if (contador >= nombre.Length)
-            {
-                Interaction.MsgBox("Se ha alcanzado el límite de alumnos registrados.",
-                    MsgBoxStyle.Exclamation, "Límite alcanzado");
-                return;
-            }
 
             //Validando el Nombre
             if (string.IsNullOrWhiteSpace(txtIngresarNombre.Text))
@@ -162,32 +152,86 @@ namespace Registro_de_Alumnos
 
             //Validar credenciales
             if (!ValidarCredenciales())
+                return;                                  
+
+            // Crear objeto Alumno con los datos del formulario
+            Alumno a = new Alumno
+            {
+                Nombre = txtIngresarNombre.Text.Trim(),
+                Apellido = txtInsertarApellido.Text.Trim(),
+                Cedula = txtIngresarCedula.Text.Trim(),
+                Carrera = cmbCarrera.Text,
+                Semestre = semestreSeleccionado,
+                Jornada = jornadaSeleccionada,
+                Usuario = txtUsuario.Text.Trim(),
+                Contrasena = txtContraseña.Text,
+                RecibirNotificaciones = chkNotificaciones.Checked
+            };
+
+            int nuevoId;
+
+            try
+            {
+                nuevoId = repo.Insertar(a);
+            }
+            catch (Exception ex)
+            {
+                Interaction.MsgBox(
+                    "Error al guardar en la base de datos:\n" + ex.Message,
+                    MsgBoxStyle.Critical,
+                    "Error");
                 return;
-                                   
-           //Guardar la informacion en los vectores
-            nombre[contador] = txtIngresarNombre.Text;
-            apellido[contador] = txtInsertarApellido.Text;
-            cedula[contador] = txtIngresarCedula.Text;
-            carrera[contador] = cmbCarrera.Text;
-            jornada[contador] = jornadaSeleccionada;
-            semestre[contador] = semestreSeleccionado;
-            usuario[contador] = txtUsuario.Text;
-            contraseña[contador] = txtContraseña.Text;
+            }
 
-            // Mostrar informacion en listBox
-            lstListaAlumnos.Items.Add(
-                $"{nombre[contador]} - {usuario[contador]} - Carrera: {carrera[contador]}"
-            );
-
-            contador++; //Incremento del vector
-
-            Interaction.MsgBox("Datos del estudiante y credenciales guardados correctamente.",
+            Interaction.MsgBox($"Alumno registrado con ID: {nuevoId}.",
                 MsgBoxStyle.Information, "Éxito");
+
+
+            // Recargar lista desde la BD
+            CargarAlumnosEnListBox();
 
             LimpiarCredenciales(); //Limpiamos despues de guardar
         }
 
-        
+        private void CargarAlumnosEnListBox()
+        {
+            lstListaAlumnos.Items.Clear();
+            alumnosActuales = repo.ObtenerTodos();
+
+            foreach (var a in alumnosActuales)
+            {
+                lstListaAlumnos.Items.Add ($"{a.Id} - {a.Nombre} {a.Apellido} - {a.Carrera} - {a.Jornada}");
+
+            }
+        }
+
+        private void lstListaAlumnos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstListaAlumnos.SelectedIndex == -1) return;
+
+            var a = alumnosActuales[lstListaAlumnos.SelectedIndex];
+
+            idSeleccionado = a.Id;
+
+            txtIngresarNombre.Text = a.Nombre;
+            txtInsertarApellido.Text = a.Apellido;
+            txtIngresarCedula.Text = a.Cedula;
+            cmbCarrera.Text = a.Carrera;
+
+            rdoJornada1.Checked = a.Jornada == "Matutina";
+            rdoJornada2.Checked = a.Jornada == "Vespertina";
+
+            rdoSemestre1.Checked = a.Semestre == "Primer Semestre";
+            rdoSemestre2.Checked = a.Semestre == "Segundo Semestre";
+
+            txtUsuario.Text = a.Usuario;
+            txtContraseña.Text = a.Contrasena;
+            txtConfirmar.Text = a.Contrasena;
+
+            chkNotificaciones.Checked = a.RecibirNotificaciones;
+        }
+
+
 
         private void LimpiarCredenciales() //Metodo que limpia los campos texto
         {
@@ -195,7 +239,7 @@ namespace Registro_de_Alumnos
             txtIngresarNombre.Clear();
             txtInsertarApellido.Clear();
             txtIngresarCedula.Clear();
-            cmbCarrera.SelectedIndex = -1;
+            cmbCarrera.SelectedIndex = 0;
 
             rdoJornada1.Checked = false;
             rdoJornada2.Checked = false;
@@ -360,7 +404,7 @@ namespace Registro_de_Alumnos
         //Atajos de teclado
         private void AtajosDelTeclado(object sender, KeyEventArgs e)
         {
-            // Ctrl + S -> Guardar
+            // Ctrl + S = Guardar
             if (e.Control && e.KeyCode == Keys.S)
             {
                 BtnGuardar.PerformClick();
@@ -368,13 +412,35 @@ namespace Registro_de_Alumnos
                 return;
             }
 
-            // Esc -> Nuevo / Limpiar
-            if (e.KeyCode == Keys.Escape)
+            if (e.Control && e.KeyCode == Keys.D)  // Eliminar
+            {
+                BtnEliminar.PerformClick();
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            // Editar
+            if (e.Control && e.KeyCode == Keys.E)
+            {
+                BtnEditar.PerformClick();
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            if (e.Control && e.KeyCode == Keys.R)  // Reportes
+            {
+                mnuReportes.PerformClick();
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            if (e.KeyCode == Keys.Escape)  // Nuevo
             {
                 BtnNuevo.PerformClick();
                 e.SuppressKeyPress = true;
                 return;
             }
+
         }
 
         //Menu De la parte superior
@@ -412,6 +478,118 @@ namespace Registro_de_Alumnos
                 "Sistema de Registro de Alumnos\nVersión 1.0\nAutores: Brandom Arcia, Anthony Perez",
                 MsgBoxStyle.Information,
                 "Acerca de");
+        }
+
+        private void BtnEditar_Click(object sender, EventArgs e)
+        {
+            if (idSeleccionado == 0)
+            {
+                Interaction.MsgBox("Debe seleccionar un alumno de la lista.",
+                    MsgBoxStyle.Exclamation, "Editar");
+                return;
+            }
+
+            if (!ValidarCredenciales())
+                return;
+
+            // Puedes reutilizar tus otras validaciones de nombre, carrera, etc.
+
+            string jornadaSeleccionada = rdoJornada1.Checked ? "Matutina" :
+                                         rdoJornada2.Checked ? "Vespertina" : "";
+
+            string semestreSeleccionado = rdoSemestre1.Checked ? "Primer Semestre" :
+                                          rdoSemestre2.Checked ? "Segundo Semestre" : "";
+
+            Alumno a = new Alumno
+            {
+                Id = idSeleccionado,
+                Nombre = txtIngresarNombre.Text.Trim(),
+                Apellido = txtInsertarApellido.Text.Trim(),
+                Cedula = txtIngresarCedula.Text.Trim(),
+                Carrera = cmbCarrera.Text,
+                Semestre = semestreSeleccionado,
+                Jornada = jornadaSeleccionada,
+                Usuario = txtUsuario.Text.Trim(),
+                Contrasena = txtContraseña.Text,
+                RecibirNotificaciones = chkNotificaciones.Checked
+            };
+
+            repo.Actualizar(a);
+
+            Interaction.MsgBox("Datos del alumno actualizados correctamente.",
+                MsgBoxStyle.Information, "Editar");
+
+            CargarAlumnosEnListBox();
+            LimpiarCredenciales();
+            idSeleccionado = 0;
+        }
+
+        private void BtnEliminar_Click(object sender, EventArgs e)
+        {
+            if (idSeleccionado == 0)
+            {
+                Interaction.MsgBox("Debe seleccionar un alumno de la lista.",
+                    MsgBoxStyle.Exclamation, "Eliminar");
+                return;
+            }
+
+            var resp = Interaction.MsgBox(
+                "¿Está seguro de eliminar este alumno?",
+                MsgBoxStyle.YesNo | MsgBoxStyle.Question,
+                "Confirmar eliminación");
+
+            if (resp != MsgBoxResult.Yes) return;
+
+            repo.Eliminar(idSeleccionado);
+
+            Interaction.MsgBox("Alumno eliminado correctamente.",
+                MsgBoxStyle.Information, "Eliminar");
+
+            CargarAlumnosEnListBox();
+            LimpiarCredenciales();
+            idSeleccionado = 0;
+        }
+
+        private void BtnBuscarCedula_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtBuscarCedula.Text))
+            {
+                Interaction.MsgBox("Ingrese una cédula para buscar.",
+                    MsgBoxStyle.Exclamation, "Buscar");
+                return;
+            }
+
+            var alumno = repo.BuscarPorCedula(txtBuscarCedula.Text.Trim());
+
+            if (alumno == null)
+            {
+                Interaction.MsgBox("No existe un alumno con esa cédula.",
+                    MsgBoxStyle.Information, "Buscar");
+                return;
+            }
+
+            // Rellenar campos igual que seleccionar en el ListBox
+            idSeleccionado = alumno.Id;
+            txtIngresarNombre.Text = alumno.Nombre;
+            txtInsertarApellido.Text = alumno.Apellido;
+            txtIngresarCedula.Text = alumno.Cedula;
+            cmbCarrera.Text = alumno.Carrera;
+            rdoJornada1.Checked = alumno.Jornada == "Matutina";
+            rdoJornada2.Checked = alumno.Jornada == "Vespertina";
+            rdoSemestre1.Checked = alumno.Semestre == "Primer Semestre";
+            rdoSemestre2.Checked = alumno.Semestre == "Segundo Semestre";
+            txtUsuario.Text = alumno.Usuario;
+            txtContraseña.Text = alumno.Contrasena;
+            txtConfirmar.Text = alumno.Contrasena;
+            chkNotificaciones.Checked = alumno.RecibirNotificaciones;
+        }
+
+        private void mnuReportes_Click(object sender, EventArgs e)
+        {
+          /*  using (var frm = new FrmReportes())
+            {
+                frm.ShowDialog();
+            }*/
         }
     }
 }
