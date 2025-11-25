@@ -95,3 +95,20 @@ Migrations/
 
 # Windows
 Desktop.ini
+
+# Build results
+bin/
+obj/
+
+# NuGet packages
+packages/
+*.nupkg
+
+# VS files
+*.user
+*.suo
+*.cache
+
+# Others
+*.tmp
+*.log
