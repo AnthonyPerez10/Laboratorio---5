@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Linq;   
 
 
 
@@ -39,6 +40,7 @@ namespace Registro_de_Alumnos
             txtInsertarApellido.KeyPress += SoloLetras;
         }
 
+        //Formulario principal
         private void Form1_Load(object sender, EventArgs e)
         {
             //Mensaje de ingreso
@@ -78,14 +80,18 @@ namespace Registro_de_Alumnos
             lstListaAlumnos.MultiColumn = false;         // Para que sea una sola columna vertical
             CargarAlumnosEnListBox();
 
-        }
-        //Boton Guardar datos de nuevo estudiante
 
+            //Activacion del desplazamiento con la flechas en textBox
+            this.KeyPreview = true;
+        }
+
+        // Boton nuevo: Solo limpia las credenciales para agregar un nuevo alumno
         private void BtnNuevo_Click(object sender, EventArgs e)
         {
             LimpiarCredenciales();
         }
 
+        //Boton Guardar datos de nuevo estudiante
         private void BtnGuardar_Click(object sender, EventArgs e)
         {
 
@@ -149,6 +155,17 @@ namespace Registro_de_Alumnos
                 return;
             }
 
+            // --- Validar si la cédula ya existe en la BD ---
+            if (repo.CedulaExiste(txtIngresarCedula.Text.Trim()))
+            {
+                Interaction.MsgBox(
+                    "Esta cédula ya está registrada. Ingrese una diferente.",
+                    MsgBoxStyle.Exclamation,
+                    "Duplicado"
+                );
+                txtIngresarCedula.Focus();
+                return;
+            }
 
             //Validar credenciales
             if (!ValidarCredenciales())
@@ -193,6 +210,7 @@ namespace Registro_de_Alumnos
             LimpiarCredenciales(); //Limpiamos despues de guardar
         }
 
+        //Metodo para cargar los alumnos en ListBox desde la base de datos
         private void CargarAlumnosEnListBox()
         {
             lstListaAlumnos.Items.Clear();
@@ -205,6 +223,7 @@ namespace Registro_de_Alumnos
             }
         }
 
+        //Meetodo para listar la lista de alumnos predefinida de la base de datos
         private void lstListaAlumnos_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstListaAlumnos.SelectedIndex == -1) return;
@@ -399,8 +418,6 @@ namespace Registro_de_Alumnos
             }
         }
 
-
-
         //Atajos de teclado
         private void AtajosDelTeclado(object sender, KeyEventArgs e)
         {
@@ -437,6 +454,39 @@ namespace Registro_de_Alumnos
             if (e.KeyCode == Keys.Escape)  // Nuevo
             {
                 BtnNuevo.PerformClick();
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            //Buscar
+            if (e.Control && e.KeyCode == Keys.B)
+            {
+                BtnBuscarCedula.PerformClick();
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            //Desplazamiento con las flechas usando el teclado 
+            // --- Navegación con Enter ---
+            if (e.KeyCode == Keys.Enter)
+            {
+                this.SelectNextControl(ActiveControl, true, true, true, true);
+                e.SuppressKeyPress = true;  // Evita que suene el “ding”
+                return;
+            }
+
+            // --- Navegación con flecha abajo ---
+            if (e.KeyCode == Keys.Down)
+            {
+                this.SelectNextControl(ActiveControl, true, true, true, true);
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            // --- Navegación con flecha arriba ---
+            if (e.KeyCode == Keys.Up)
+            {
+                this.SelectNextControl(ActiveControl, false, true, true, true);
                 e.SuppressKeyPress = true;
                 return;
             }
@@ -480,26 +530,30 @@ namespace Registro_de_Alumnos
                 "Acerca de");
         }
 
+        //Opcion de editar un alumno
         private void BtnEditar_Click(object sender, EventArgs e)
         {
+            // Verifica que se haya seleccionado un alumno en la lista
             if (idSeleccionado == 0)
             {
                 Interaction.MsgBox("Debe seleccionar un alumno de la lista.",
                     MsgBoxStyle.Exclamation, "Editar");
-                return;
+                return; // Si no hay selección, termina el método
             }
 
+            // Valida las credenciales ingresadas antes de editar
             if (!ValidarCredenciales())
                 return;
 
-            // Puedes reutilizar tus otras validaciones de nombre, carrera, etc.
-
+            // Determina la jornada seleccionada según los RadioButtons
             string jornadaSeleccionada = rdoJornada1.Checked ? "Matutina" :
                                          rdoJornada2.Checked ? "Vespertina" : "";
 
+            // Determina el semestre seleccionado según los RadioButtons
             string semestreSeleccionado = rdoSemestre1.Checked ? "Primer Semestre" :
                                           rdoSemestre2.Checked ? "Segundo Semestre" : "";
 
+            // Crea un objeto Alumno con los datos ingresados en el formulario
             Alumno a = new Alumno
             {
                 Id = idSeleccionado,
@@ -514,16 +568,24 @@ namespace Registro_de_Alumnos
                 RecibirNotificaciones = chkNotificaciones.Checked
             };
 
+            // Llama al repositorio para actualizar los datos del alumno en la base de datos
             repo.Actualizar(a);
 
+            // Mensaje de confirmación al usuario
             Interaction.MsgBox("Datos del alumno actualizados correctamente.",
                 MsgBoxStyle.Information, "Editar");
 
+            // Recarga la lista de alumnos en el ListBox
             CargarAlumnosEnListBox();
+
+            // Limpia los campos de credenciales
             LimpiarCredenciales();
+
+            // Resetea la variable de selección
             idSeleccionado = 0;
         }
 
+        // Boton de eliminar alumno 
         private void BtnEliminar_Click(object sender, EventArgs e)
         {
             if (idSeleccionado == 0)
@@ -550,8 +612,10 @@ namespace Registro_de_Alumnos
             idSeleccionado = 0;
         }
 
+        //Boton de busqueda por medio de la cedula 
         private void BtnBuscarCedula_Click(object sender, EventArgs e)
         {
+            // Valida que se haya ingresado una cédula
             if (string.IsNullOrWhiteSpace(txtBuscarCedula.Text))
             {
                 Interaction.MsgBox("Ingrese una cédula para buscar.",
@@ -559,8 +623,10 @@ namespace Registro_de_Alumnos
                 return;
             }
 
+            // Busca el alumno en el repositorio por cédula
             var alumno = repo.BuscarPorCedula(txtBuscarCedula.Text.Trim());
 
+            // Si no existe el alumno, muestra mensaje
             if (alumno == null)
             {
                 Interaction.MsgBox("No existe un alumno con esa cédula.",
@@ -568,28 +634,128 @@ namespace Registro_de_Alumnos
                 return;
             }
 
-            // Rellenar campos igual que seleccionar en el ListBox
-            idSeleccionado = alumno.Id;
-            txtIngresarNombre.Text = alumno.Nombre;
-            txtInsertarApellido.Text = alumno.Apellido;
-            txtIngresarCedula.Text = alumno.Cedula;
-            cmbCarrera.Text = alumno.Carrera;
-            rdoJornada1.Checked = alumno.Jornada == "Matutina";
-            rdoJornada2.Checked = alumno.Jornada == "Vespertina";
-            rdoSemestre1.Checked = alumno.Semestre == "Primer Semestre";
-            rdoSemestre2.Checked = alumno.Semestre == "Segundo Semestre";
-            txtUsuario.Text = alumno.Usuario;
-            txtContraseña.Text = alumno.Contrasena;
-            txtConfirmar.Text = alumno.Contrasena;
-            chkNotificaciones.Checked = alumno.RecibirNotificaciones;
+            // MessageBox con la información encontrada
+            Interaction.MsgBox(
+                $"Alumno encontrado:\n\n" +
+                $"Nombre: {alumno.Nombre} {alumno.Apellido}\n" +
+                $"Cédula: {alumno.Cedula}\n" +
+                $"Carrera: {alumno.Carrera}",
+                MsgBoxStyle.Information,
+                "Resultado de Búsqueda");
         }
 
+        // Archivo -> Reportes
         private void mnuReportes_Click(object sender, EventArgs e)
         {
-          /*  using (var frm = new FrmReportes())
+            CRUD repo = new CRUD();
+            var lista = repo.ObtenerTodos();
+
+            ReportesPDF.ReporteGeneral(lista);
+
+            MessageBox.Show("Reporte general generado en el Escritorio.");
+        }
+
+        //Reportes -> Reportes por carrera
+        private void reportePorCarreraToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string carrera = "";
+
+            // Desplegar opciones en un InputBox simple
+            carrera = Microsoft.VisualBasic.Interaction.InputBox(
+                "Seleccione la carrera:\n\n" +
+                "1. Ingeniería en Sistemas\n" +
+                "2. Ingeniería Industrial\n" +
+                "3. Administración\n" +
+                "4. Contabilidad",
+                "Reporte por carrera",
+                "1"
+            );
+
+            // Convertir número a texto
+            switch (carrera)
             {
-                frm.ShowDialog();
-            }*/
+                case "1": carrera = "Ingeniería en Sistemas"; break;
+                case "2": carrera = "Ingeniería Industrial"; break;
+                case "3": carrera = "Administración"; break;
+                case "4": carrera = "Contabilidad"; break;
+                default:
+                    MessageBox.Show("Opción no válida.");
+                    return;
+            }
+
+            CRUD repo = new CRUD();
+            var lista = repo.ObtenerTodos();
+
+            ReportesPDF.ReportePorCarrera(lista, carrera);
+
+            MessageBox.Show("Reporte por carrera generado en el Escritorio.");
+        }
+
+        // Reportes -> reportes por jornada
+        private void reportePorJornadaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string jornada = Microsoft.VisualBasic.Interaction.InputBox(
+                "Seleccione jornada:\n\n" +
+                "1. Matutina\n" +
+                "2. Vespertina",
+                "Reporte por jornada",
+                "1"
+            );
+
+            if (jornada == "1") jornada = "Matutina";
+            else if (jornada == "2") jornada = "Vespertina";
+            else
+            {
+                MessageBox.Show("Opción no válida.");
+                return;
+            }
+
+            CRUD repo = new CRUD();
+            var lista = repo.ObtenerTodos();
+
+            ReportesPDF.ReportePorJornada(lista, jornada);
+
+            MessageBox.Show("Reporte por jornada generado en el Escritorio.");
+        }
+
+        //Reportes -> reportes por rango de fechas 
+        private void reporteEnRangoDeFechasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CRUD repo = new CRUD();
+            var lista = repo.ObtenerTodos();
+
+            DateTime desde = DateTime.Today.AddMonths(-1);
+            DateTime hasta = DateTime.Today;
+
+            ReportesPDF.ReporteRango(lista, desde, hasta);
+            MessageBox.Show("Reporte en rango de fechas generado en el escritorio.");
+        }
+
+        //Reportes -> Perfil individual
+        private void perfilIndividualToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CRUD repo = new CRUD();
+            var lista = repo.ObtenerTodos();
+
+            string idStr = Microsoft.VisualBasic.Interaction.InputBox(
+                "Ingrese ID del alumno:",
+                "Perfil del alumno",
+                "1");
+
+            if (int.TryParse(idStr, out int id))
+                {
+                    var alumno = lista.FirstOrDefault(a => a.Id == id);
+
+                    if (alumno != null)
+                    {
+                        ReportesPDF.ReportePerfil(alumno);
+                        MessageBox.Show("Perfil generado.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Alumno no encontrado.");
+                }
+             }
         }
     }
 }

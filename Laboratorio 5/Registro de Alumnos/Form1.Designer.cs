@@ -76,6 +76,11 @@
             this.mnuAcercaDe = new System.Windows.Forms.ToolStripMenuItem();
             this.txtBuscarCedula = new System.Windows.Forms.TextBox();
             this.BtnBuscarCedula = new System.Windows.Forms.Button();
+            this.reportePorCarreraToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportePorJornadaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reporteEnRangoDeFechasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.perfilIndividualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportesGeneralToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.grpJornada.SuspendLayout();
             this.grpSemestre.SuspendLayout();
@@ -525,19 +530,26 @@
             this.mnuEditar.Name = "mnuEditar";
             this.mnuEditar.Size = new System.Drawing.Size(180, 24);
             this.mnuEditar.Text = "Editar";
+            this.mnuEditar.Click += new System.EventHandler(this.BtnEditar_Click);
             // 
             // mnuEliminar
             // 
             this.mnuEliminar.Name = "mnuEliminar";
             this.mnuEliminar.Size = new System.Drawing.Size(180, 24);
             this.mnuEliminar.Text = "Eliminar";
+            this.mnuEliminar.Click += new System.EventHandler(this.BtnEliminar_Click);
             // 
             // mnuReportes
             // 
+            this.mnuReportes.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.reportesGeneralToolStripMenuItem,
+            this.reportePorCarreraToolStripMenuItem,
+            this.reportePorJornadaToolStripMenuItem,
+            this.reporteEnRangoDeFechasToolStripMenuItem,
+            this.perfilIndividualToolStripMenuItem});
             this.mnuReportes.Name = "mnuReportes";
             this.mnuReportes.Size = new System.Drawing.Size(180, 24);
             this.mnuReportes.Text = "Reportes";
-            this.mnuReportes.Click += new System.EventHandler(this.mnuReportes_Click);
             // 
             // mnuSalir
             // 
@@ -580,6 +592,41 @@
             this.BtnBuscarCedula.Text = "Buscar";
             this.BtnBuscarCedula.UseVisualStyleBackColor = false;
             this.BtnBuscarCedula.Click += new System.EventHandler(this.BtnBuscarCedula_Click);
+            // 
+            // reportePorCarreraToolStripMenuItem
+            // 
+            this.reportePorCarreraToolStripMenuItem.Name = "reportePorCarreraToolStripMenuItem";
+            this.reportePorCarreraToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.reportePorCarreraToolStripMenuItem.Text = "Reporte por carrera";
+            this.reportePorCarreraToolStripMenuItem.Click += new System.EventHandler(this.reportePorCarreraToolStripMenuItem_Click);
+            // 
+            // reportePorJornadaToolStripMenuItem
+            // 
+            this.reportePorJornadaToolStripMenuItem.Name = "reportePorJornadaToolStripMenuItem";
+            this.reportePorJornadaToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.reportePorJornadaToolStripMenuItem.Text = "Reporte por jornada";
+            this.reportePorJornadaToolStripMenuItem.Click += new System.EventHandler(this.reportePorJornadaToolStripMenuItem_Click);
+            // 
+            // reporteEnRangoDeFechasToolStripMenuItem
+            // 
+            this.reporteEnRangoDeFechasToolStripMenuItem.Name = "reporteEnRangoDeFechasToolStripMenuItem";
+            this.reporteEnRangoDeFechasToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.reporteEnRangoDeFechasToolStripMenuItem.Text = "Reporte en rango de fechas";
+            this.reporteEnRangoDeFechasToolStripMenuItem.Click += new System.EventHandler(this.reporteEnRangoDeFechasToolStripMenuItem_Click);
+            // 
+            // perfilIndividualToolStripMenuItem
+            // 
+            this.perfilIndividualToolStripMenuItem.Name = "perfilIndividualToolStripMenuItem";
+            this.perfilIndividualToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.perfilIndividualToolStripMenuItem.Text = "Perfil Individual";
+            this.perfilIndividualToolStripMenuItem.Click += new System.EventHandler(this.perfilIndividualToolStripMenuItem_Click);
+            // 
+            // reportesGeneralToolStripMenuItem
+            // 
+            this.reportesGeneralToolStripMenuItem.Name = "reportesGeneralToolStripMenuItem";
+            this.reportesGeneralToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.reportesGeneralToolStripMenuItem.Text = "Reportes General";
+            this.reportesGeneralToolStripMenuItem.Click += new System.EventHandler(this.mnuReportes_Click);
             // 
             // Form1
             // 
@@ -663,6 +710,11 @@
         private System.Windows.Forms.ToolStripMenuItem mnuReportes;
         private System.Windows.Forms.TextBox txtBuscarCedula;
         private System.Windows.Forms.Button BtnBuscarCedula;
+        private System.Windows.Forms.ToolStripMenuItem reportePorCarreraToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reportePorJornadaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reporteEnRangoDeFechasToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem perfilIndividualToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reportesGeneralToolStripMenuItem;
     }
 }
 

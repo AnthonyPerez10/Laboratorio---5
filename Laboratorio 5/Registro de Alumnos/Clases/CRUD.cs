@@ -7,22 +7,29 @@ using System.Threading.Tasks;
 
 namespace Registro_de_Alumnos.Clases
 {
+
+    //Clase que implementa operaciones CRUD para la tabla de alumnos
     public class CRUD
     {
         public List<Alumno> ObtenerTodos()
         {
+            //Metodo para obtener todos los alumnos de la base de datos
             var lista = new List<Alumno>();
 
+            //Uso de using para asegurar que la conexion y el comando se cierren 
             using (SqlConnection conn = ConexionBD.ObtenerConexion())
             using (SqlCommand cmd = new SqlCommand("SELECT * FROM Alumnos ORDER BY FechaRegistro", conn))
             {
-                conn.Open();
+                conn.Open(); //Abrimos la conexión a la base de datos
+
+                //Ejecutamos el comando y leemos los resultados
                 using (SqlDataReader dr = cmd.ExecuteReader())
                 {
-                    while (dr.Read())
+                    while (dr.Read()) //Recorremos cada fila de alumno y asignamos la propiedades
                     {
                         lista.Add(new Alumno
                         {
+                            // Creamos un bjecto de alumno y asignamos sus propiedades
                             Id = (int)dr["Id"],
                             Nombre = dr["Nombre"].ToString(),
                             Apellido = dr["Apellido"].ToString(),
@@ -42,6 +49,7 @@ namespace Registro_de_Alumnos.Clases
             return lista;
         }
 
+        //Metodo para insertar un nuevo alumno en la base de datos 
         public int Insertar(Alumno a)
         {
             using (SqlConnection conn = ConexionBD.ObtenerConexion())
@@ -67,6 +75,7 @@ namespace Registro_de_Alumnos.Clases
             }
         }
 
+        //Metodo para actualizar alumno existente
         public void Actualizar(Alumno a)
         {
             using (SqlConnection conn = ConexionBD.ObtenerConexion())
@@ -99,6 +108,7 @@ namespace Registro_de_Alumnos.Clases
             }
         }
 
+        //Metodo para eliminar un alumno por medio del ID
         public void Eliminar(int id)
         {
             using (SqlConnection conn = ConexionBD.ObtenerConexion())
@@ -110,6 +120,7 @@ namespace Registro_de_Alumnos.Clases
             }
         }
 
+        //Metodo de busqueda por cedula
         public Alumno BuscarPorCedula(string cedula)
         {
             using (SqlConnection conn = ConexionBD.ObtenerConexion())
@@ -138,5 +149,23 @@ namespace Registro_de_Alumnos.Clases
                 }
             }
         }
+
+        //Metodo para validar que los usuario con la misma cedula no se repitan 
+        public bool CedulaExiste(string cedula)
+        {
+            using (SqlConnection conn = ConexionBD.ObtenerConexion())
+            using (SqlCommand cmd = new SqlCommand(
+                //Consula que se realiza a la base de datos 
+                "SELECT COUNT(*) FROM Alumnos WHERE Cedula = @Cedula", conn))
+            {
+                cmd.Parameters.AddWithValue("@Cedula", cedula);
+
+                conn.Open();
+                int count = (int)cmd.ExecuteScalar();
+
+                return count > 0; // true si ya existe
+            }
+        }
+
     }
 }

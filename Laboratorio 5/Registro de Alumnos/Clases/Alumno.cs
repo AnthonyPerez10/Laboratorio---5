@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Registro_de_Alumnos.Clases
 {
+    //Metodos para extraer y setear los datos del alumno
     public class Alumno
     {
         public int Id { get; set; }
