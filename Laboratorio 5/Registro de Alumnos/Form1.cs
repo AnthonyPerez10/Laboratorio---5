@@ -218,7 +218,7 @@ namespace Registro_de_Alumnos
 
             foreach (var a in alumnosActuales)
             {
-                lstListaAlumnos.Items.Add ($"{a.Id} - {a.Nombre} {a.Apellido} - {a.Carrera} - {a.Jornada}");
+                lstListaAlumnos.Items.Add ($"{a.Id} - {a.Nombre} {a.Apellido} - {a.Cedula} - {a.Carrera} - {a.Jornada}");
 
             }
         }
@@ -249,7 +249,6 @@ namespace Registro_de_Alumnos
 
             chkNotificaciones.Checked = a.RecibirNotificaciones;
         }
-
 
 
         private void LimpiarCredenciales() //Metodo que limpia los campos texto
@@ -297,6 +296,18 @@ namespace Registro_de_Alumnos
                     MsgBoxStyle.Exclamation,
                     "Validación");
                 txtContraseña.Focus();
+                return false;
+            }
+
+            // Contraseña con un maximo de 8 cacteres
+            if (txtContraseña.Text.Length < 8)
+            {
+                Interaction.MsgBox("La contraseña debe tener al menos 8 caracteres.",
+                    MsgBoxStyle.Exclamation,
+                    "Validación");
+
+                txtContraseña.Focus();
+                txtContraseña.SelectAll();
                 return false;
             }
 
@@ -475,7 +486,7 @@ namespace Registro_de_Alumnos
                 return;
             }
 
-            // --- Navegación con flecha abajo ---
+            // --- Navegación con flecha abajo---
             if (e.KeyCode == Keys.Down)
             {
                 this.SelectNextControl(ActiveControl, true, true, true, true);
@@ -639,9 +650,15 @@ namespace Registro_de_Alumnos
                 $"Alumno encontrado:\n\n" +
                 $"Nombre: {alumno.Nombre} {alumno.Apellido}\n" +
                 $"Cédula: {alumno.Cedula}\n" +
-                $"Carrera: {alumno.Carrera}",
+                $"Carrera: {alumno.Carrera}" +
+                $"Usuario: {alumno.Usuario}" +
+                $"Jornada: {alumno.Jornada}",
                 MsgBoxStyle.Information,
                 "Resultado de Búsqueda");
+
+            // Limpiar el campo de búsqueda
+            txtBuscarCedula.Clear();
+            txtBuscarCedula.Focus();
         }
 
         // Archivo -> Reportes
@@ -722,13 +739,28 @@ namespace Registro_de_Alumnos
         private void reporteEnRangoDeFechasToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CRUD repo = new CRUD();
-            var lista = repo.ObtenerTodos();
+            var lista = repo.ObtenerTodos();   // Trae todos los alumnos
 
+            // Definir rango manualmente 
             DateTime desde = DateTime.Today.AddMonths(-1);
-            DateTime hasta = DateTime.Today;
+            DateTime hasta = DateTime.Today.AddDays(1).AddSeconds(-1); 
 
-            ReportesPDF.ReporteRango(lista, desde, hasta);
-            MessageBox.Show("Reporte en rango de fechas generado en el escritorio.");
+            // Filtrar por fecha
+            var filtrado = lista.Where(a =>
+                a.FechaRegistro >= desde &&
+                a.FechaRegistro <= hasta
+            ).ToList();
+
+            if (filtrado.Count == 0)
+            {
+                MessageBox.Show("No hay registros dentro del rango de fechas.");
+                return;
+            }
+
+            // Generar PDF SOLO con los filtrados
+            ReportesPDF.ReporteRango(filtrado, desde, hasta);
+
+            MessageBox.Show("Reporte generado en el escritorio.");
         }
 
         //Reportes -> Perfil individual
