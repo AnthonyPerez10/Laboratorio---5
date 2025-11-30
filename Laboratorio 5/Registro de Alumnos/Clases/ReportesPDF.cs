@@ -4,196 +4,245 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Registro_de_Alumnos.Clases
 {
-
-    // Evento para agregar pie de página con número de página
+    // Pie de página con número de página
     public class PiePagina : PdfPageEventHelper
     {
-        public override void OnEndPage(PdfWriter writer, Document document)
+        public override void OnEndPage(PdfWriter writer, Document doc)
         {
-            PdfPTable footer = new PdfPTable(1);
-            footer.TotalWidth = document.PageSize.Width - 40;
-
-            footer.AddCell(new PdfPCell(new Phrase("Página " + writer.PageNumber))
-            {
-                Border = 0,
-                HorizontalAlignment = Element.ALIGN_RIGHT
-            });
-
+            PdfPTable footer = new PdfPTable(1) { TotalWidth = doc.PageSize.Width - 40 };
+            PdfPCell celda = new PdfPCell(new Phrase("Página " + writer.PageNumber));
+            celda.Border = Rectangle.NO_BORDER;
+            celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+            footer.AddCell(celda);
             footer.WriteSelectedRows(0, -1, 20, 30, writer.DirectContent);
         }
     }
 
-    //Clase que genera los reportes 
     public class ReportesPDF
     {
+        // Carpeta donde se guardan los PDF
         private static string Ruta(string nombre)
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), nombre + ".pdf");
+            string carpeta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MisReportes");
+            Directory.CreateDirectory(carpeta);
+            return Path.Combine(carpeta, nombre + ".pdf");
         }
 
-        // Reporte general de alumnos
-        public static void ReporteGeneral(List<Alumno> lista)
+        // Crear tabla con encabezado estilizado
+        private static PdfPTable CrearTablaCabecera(string[] headers)
+        {
+            PdfPTable tabla = new PdfPTable(headers.Length) { WidthPercentage = 100 };
+            foreach (var h in headers)
+            {
+                PdfPCell celda = new PdfPCell(new Phrase(h, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE)))
+                {
+                    BackgroundColor = BaseColor.DARK_GRAY,
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    Padding = 5
+                };
+                tabla.AddCell(celda);
+            }
+            return tabla;
+        }
+
+        // Agregar filas con estilo alternado (blanco y gris claro)
+        private static void AgregarFila(PdfPTable tabla, int indiceFila, params string[] valores)
+        {
+            BaseColor colorFondo = (indiceFila % 2 == 0) ? BaseColor.WHITE : new BaseColor(230, 230, 230); // alternar filas
+            foreach (var val in valores)
+            {
+                PdfPCell celda = new PdfPCell(new Phrase(val, FontFactory.GetFont(FontFactory.HELVETICA, 10, BaseColor.BLACK)))
+                {
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    Padding = 5,
+                    BackgroundColor = colorFondo
+                };
+                tabla.AddCell(celda);
+            }
+        }
+
+        // Agregar título grande azul
+        private static void AgregarTitulo(Document doc, string texto)
+        {
+            Paragraph titulo = new Paragraph(texto, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLUE));
+            titulo.Alignment = Element.ALIGN_CENTER;
+            titulo.SpacingAfter = 15;
+            doc.Add(titulo);
+        }
+
+        // Agregar fecha
+        private static void AgregarFecha(Document doc)
+        {
+            Paragraph fecha = new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString(),
+                FontFactory.GetFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.DARK_GRAY));
+            fecha.Alignment = Element.ALIGN_RIGHT;
+            fecha.SpacingAfter = 10;
+            doc.Add(fecha);
+        }
+
+        // ------------------- REPORTES -------------------
+
+        // Reporte General 
+        public static string ReporteGeneral(List<Alumno> lista)
         {
             lista = lista.OrderBy(x => x.FechaRegistro).ToList();
+            string ruta = Ruta("Reporte_General");
 
             Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(Ruta("Reporte_General"), FileMode.Create));
+            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
             writer.PageEvent = new PiePagina();
             doc.Open();
 
-            doc.Add(new Paragraph("REPORTE GENERAL DE ALUMNOS"));
-            doc.Add(new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString() + "\n\n"));
+            AgregarTitulo(doc, "REPORTE GENERAL DE ALUMNOS");
+            AgregarFecha(doc);
 
-            PdfPTable tabla = new PdfPTable(8);
-            tabla.AddCell("ID");
-            tabla.AddCell("Nombre");
-            tabla.AddCell("Apellido");
-            tabla.AddCell("Carrera");
-            tabla.AddCell("Semestre");
-            tabla.AddCell("Jornada");
-            tabla.AddCell("Usuario");
-            tabla.AddCell("Fecha Registro");
+            string[] headers = { "ID", "Nombre", "Apellido", "Carrera", "Semestre", "Jornada", "Usuario", "Fecha Registro" };
+            PdfPTable tabla = CrearTablaCabecera(headers);
 
+            int i = 0;
             foreach (var a in lista)
             {
-                tabla.AddCell(a.Id.ToString());
-                tabla.AddCell(a.Nombre);
-                tabla.AddCell(a.Apellido);
-                tabla.AddCell(a.Carrera);
-                tabla.AddCell(a.Semestre);
-                tabla.AddCell(a.Jornada);
-                tabla.AddCell(a.Usuario);
-                tabla.AddCell(a.FechaRegistro.ToShortDateString());
+                AgregarFila(tabla, i,
+                    a.Id.ToString(),
+                    a.Nombre,
+                    a.Apellido,
+                    a.Carrera,
+                    a.Semestre,
+                    a.Jornada,
+                    a.Usuario,
+                    a.FechaRegistro.ToShortDateString()
+                );
+                i++;
             }
 
             doc.Add(tabla);
             doc.Close();
+            return ruta;
         }
 
-        // Reporte por carrera
-        public static void ReportePorCarrera(List<Alumno> lista, string carrera)
+        //Reporte por carrera
+        public static string ReportePorCarrera(List<Alumno> lista, string carrera)
         {
-            var filtrado = lista
-                .Where(x => x.Carrera == carrera)
-                .OrderBy(x => x.Nombre)
-                .ToList();
+            var filtrado = lista.Where(x => x.Carrera == carrera).OrderBy(x => x.Nombre).ToList();
+            string ruta = Ruta("Reporte_Carrera_" + carrera);
 
             Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(Ruta("Reporte_Carrera_" + carrera), FileMode.Create));
+            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
             writer.PageEvent = new PiePagina();
             doc.Open();
 
-            doc.Add(new Paragraph("REPORTE POR CARRERA"));
-            doc.Add(new Paragraph("Carrera: " + carrera));
-            doc.Add(new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString() + "\n\n"));
+            AgregarTitulo(doc, "REPORTE POR CARRERA");
+            AgregarFecha(doc);
+            doc.Add(new Paragraph("Carrera: " + carrera + "\n\n"));
 
-            PdfPTable tabla = new PdfPTable(5);
-            tabla.AddCell("ID");
-            tabla.AddCell("Nombre");
-            tabla.AddCell("Apellido");
-            tabla.AddCell("Semestre");
-            tabla.AddCell("Fecha Registro");
+            string[] headers = { "ID", "Nombre", "Apellido", "Semestre", "Fecha Registro" };
+            PdfPTable tabla = CrearTablaCabecera(headers);
 
+            int i = 0;
             foreach (var a in filtrado)
             {
-                tabla.AddCell(a.Id.ToString());
-                tabla.AddCell(a.Nombre);
-                tabla.AddCell(a.Apellido);
-                tabla.AddCell(a.Semestre);
-                tabla.AddCell(a.FechaRegistro.ToShortDateString());
+                AgregarFila(tabla, i,
+                    a.Id.ToString(),
+                    a.Nombre,
+                    a.Apellido,
+                    a.Semestre,
+                    a.FechaRegistro.ToShortDateString()
+                );
+                i++;
             }
 
             doc.Add(tabla);
             doc.Close();
+            return ruta;
         }
 
-        // Reporte por jornada
-        public static void ReportePorJornada(List<Alumno> lista, string jornada)
+        //Reporte Por Jornada 
+        public static string ReportePorJornada(List<Alumno> lista, string jornada)
         {
-            var filtrado = lista
-                .Where(x => x.Jornada == jornada)
-                .OrderBy(x => x.Apellido)
-                .ToList();
+            var filtrado = lista.Where(x => x.Jornada == jornada).OrderBy(x => x.Apellido).ToList();
+            string ruta = Ruta("Reporte_Jornada_" + jornada);
 
             Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(Ruta("Reporte_Jornada_" + jornada), FileMode.Create));
+            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
             writer.PageEvent = new PiePagina();
             doc.Open();
 
-            doc.Add(new Paragraph("REPORTE POR JORNADA"));
-            doc.Add(new Paragraph("Jornada: " + jornada));
-            doc.Add(new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString() + "\n\n"));
+            AgregarTitulo(doc, "REPORTE POR JORNADA");
+            AgregarFecha(doc);
+            doc.Add(new Paragraph("Jornada: " + jornada + "\n\n"));
 
-            PdfPTable tabla = new PdfPTable(5);
-            tabla.AddCell("ID");
-            tabla.AddCell("Nombre");
-            tabla.AddCell("Apellido");
-            tabla.AddCell("Carrera");
-            tabla.AddCell("Fecha Registro");
+            string[] headers = { "ID", "Nombre", "Apellido", "Carrera", "Fecha Registro" };
+            PdfPTable tabla = CrearTablaCabecera(headers);
 
+            int i = 0;
             foreach (var a in filtrado)
             {
-                tabla.AddCell(a.Id.ToString());
-                tabla.AddCell(a.Nombre);
-                tabla.AddCell(a.Apellido);
-                tabla.AddCell(a.Carrera);
-                tabla.AddCell(a.FechaRegistro.ToShortDateString());
+                AgregarFila(tabla, i,
+                    a.Id.ToString(),
+                    a.Nombre,
+                    a.Apellido,
+                    a.Carrera,
+                    a.FechaRegistro.ToShortDateString()
+                );
+                i++;
             }
 
             doc.Add(tabla);
             doc.Close();
+            return ruta;
         }
 
-        // Reporte en rango de fechas
-        public static void ReporteRango(List<Alumno> lista, DateTime desde, DateTime hasta)
+        //Reporte por rango de fecha
+        public static string ReporteRango(List<Alumno> lista, DateTime desde, DateTime hasta)
         {
-            var filtrado = lista
-                .Where(x => x.FechaRegistro >= desde && x.FechaRegistro <= hasta)
-                .OrderBy(x => x.FechaRegistro)
-                .ToList();
+            var filtrado = lista.Where(x => x.FechaRegistro >= desde && x.FechaRegistro <= hasta)
+                                .OrderBy(x => x.FechaRegistro).ToList();
+            string ruta = Ruta("Reporte_Rango");
 
             Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(Ruta("Reporte_Rango"), FileMode.Create));
+            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
             writer.PageEvent = new PiePagina();
             doc.Open();
 
-            doc.Add(new Paragraph("REPORTE EN RANGO DE FECHAS"));
-            doc.Add(new Paragraph($"Desde: {desde.ToShortDateString()} - Hasta: {hasta.ToShortDateString()}"));
-            doc.Add(new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString() + "\n\n"));
+            AgregarTitulo(doc, "REPORTE EN RANGO DE FECHAS");
+            AgregarFecha(doc);
+            doc.Add(new Paragraph($"Desde: {desde.ToShortDateString()} - Hasta: {hasta.ToShortDateString()}\n\n"));
 
-            PdfPTable tabla = new PdfPTable(4);
-            tabla.AddCell("ID");
-            tabla.AddCell("Nombre");
-            tabla.AddCell("Apellido");
-            tabla.AddCell("Fecha Registro");
+            string[] headers = { "ID", "Nombre", "Apellido", "Fecha Registro" };
+            PdfPTable tabla = CrearTablaCabecera(headers);
 
+            int i = 0;
             foreach (var a in filtrado)
             {
-                tabla.AddCell(a.Id.ToString());
-                tabla.AddCell(a.Nombre);
-                tabla.AddCell(a.Apellido);
-                tabla.AddCell(a.FechaRegistro.ToShortDateString());
+                AgregarFila(tabla, i,
+                    a.Id.ToString(),
+                    a.Nombre,
+                    a.Apellido,
+                    a.FechaRegistro.ToShortDateString()
+                );
+                i++;
             }
 
             doc.Add(tabla);
             doc.Close();
+            return ruta;
         }
 
-        // Reporte de perfil de alumno
-        public static void ReportePerfil(Alumno a)
+        //Reporte por perfil de alumno
+        public static string ReportePerfil(Alumno a)
         {
+            string ruta = Ruta("Perfil_" + a.Nombre);
+
             Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(Ruta("Perfil_" + a.Nombre), FileMode.Create));
+            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
             writer.PageEvent = new PiePagina();
             doc.Open();
 
-            doc.Add(new Paragraph("PERFIL DEL ALUMNO"));
-            doc.Add(new Paragraph("Fecha de emisión: " + DateTime.Now.ToShortDateString() + "\n\n"));
+            AgregarTitulo(doc, "PERFIL DEL ALUMNO");
+            AgregarFecha(doc);
 
             doc.Add(new Paragraph($"ID: {a.Id}"));
             doc.Add(new Paragraph($"Nombre: {a.Nombre} {a.Apellido}"));
@@ -206,6 +255,7 @@ namespace Registro_de_Alumnos.Clases
             doc.Add(new Paragraph($"Fecha Registro: {a.FechaRegistro.ToShortDateString()}"));
 
             doc.Close();
+            return ruta;
         }
     }
 }

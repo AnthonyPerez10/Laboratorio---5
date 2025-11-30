@@ -789,5 +789,12 @@ namespace Registro_de_Alumnos
                 }
              }
         }
+
+        //Abrir el formulario de ver reportes
+        private void btnFormVerReportes_Click(object sender, EventArgs e)
+        {
+            Form2 frm = new Form2();
+            frm.ShowDialog();
+        }
     }
 }

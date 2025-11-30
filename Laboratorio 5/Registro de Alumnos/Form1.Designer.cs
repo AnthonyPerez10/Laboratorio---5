@@ -71,16 +71,17 @@
             this.mnuEditar = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuEliminar = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuReportes = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportesGeneralToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportePorCarreraToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportePorJornadaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reporteEnRangoDeFechasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.perfilIndividualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSalir = new System.Windows.Forms.ToolStripMenuItem();
             this.ayudaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuAcercaDe = new System.Windows.Forms.ToolStripMenuItem();
             this.txtBuscarCedula = new System.Windows.Forms.TextBox();
             this.BtnBuscarCedula = new System.Windows.Forms.Button();
-            this.reportePorCarreraToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportePorJornadaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reporteEnRangoDeFechasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.perfilIndividualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportesGeneralToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnFormVerReportes = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.grpJornada.SuspendLayout();
             this.grpSemestre.SuspendLayout();
@@ -514,28 +515,28 @@
             // mnuNuevo
             // 
             this.mnuNuevo.Name = "mnuNuevo";
-            this.mnuNuevo.Size = new System.Drawing.Size(180, 24);
+            this.mnuNuevo.Size = new System.Drawing.Size(148, 24);
             this.mnuNuevo.Text = "Nuevo";
             this.mnuNuevo.Click += new System.EventHandler(this.mnuNuevo_Click);
             // 
             // mnuGuardar
             // 
             this.mnuGuardar.Name = "mnuGuardar";
-            this.mnuGuardar.Size = new System.Drawing.Size(180, 24);
+            this.mnuGuardar.Size = new System.Drawing.Size(148, 24);
             this.mnuGuardar.Text = "Guardar";
             this.mnuGuardar.Click += new System.EventHandler(this.mnuGuardar_Click);
             // 
             // mnuEditar
             // 
             this.mnuEditar.Name = "mnuEditar";
-            this.mnuEditar.Size = new System.Drawing.Size(180, 24);
+            this.mnuEditar.Size = new System.Drawing.Size(148, 24);
             this.mnuEditar.Text = "Editar";
             this.mnuEditar.Click += new System.EventHandler(this.BtnEditar_Click);
             // 
             // mnuEliminar
             // 
             this.mnuEliminar.Name = "mnuEliminar";
-            this.mnuEliminar.Size = new System.Drawing.Size(180, 24);
+            this.mnuEliminar.Size = new System.Drawing.Size(148, 24);
             this.mnuEliminar.Text = "Eliminar";
             this.mnuEliminar.Click += new System.EventHandler(this.BtnEliminar_Click);
             // 
@@ -548,50 +549,15 @@
             this.reporteEnRangoDeFechasToolStripMenuItem,
             this.perfilIndividualToolStripMenuItem});
             this.mnuReportes.Name = "mnuReportes";
-            this.mnuReportes.Size = new System.Drawing.Size(180, 24);
+            this.mnuReportes.Size = new System.Drawing.Size(148, 24);
             this.mnuReportes.Text = "Reportes";
             // 
-            // mnuSalir
+            // reportesGeneralToolStripMenuItem
             // 
-            this.mnuSalir.Name = "mnuSalir";
-            this.mnuSalir.Size = new System.Drawing.Size(180, 24);
-            this.mnuSalir.Text = "Salir";
-            this.mnuSalir.Click += new System.EventHandler(this.mnuSalir_Click);
-            // 
-            // ayudaToolStripMenuItem
-            // 
-            this.ayudaToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuAcercaDe});
-            this.ayudaToolStripMenuItem.Name = "ayudaToolStripMenuItem";
-            this.ayudaToolStripMenuItem.Size = new System.Drawing.Size(69, 23);
-            this.ayudaToolStripMenuItem.Text = "Ayuda";
-            // 
-            // mnuAcercaDe
-            // 
-            this.mnuAcercaDe.Name = "mnuAcercaDe";
-            this.mnuAcercaDe.Size = new System.Drawing.Size(156, 24);
-            this.mnuAcercaDe.Text = "Acerca de";
-            this.mnuAcercaDe.Click += new System.EventHandler(this.mnuAcercaDe_Click);
-            // 
-            // txtBuscarCedula
-            // 
-            this.txtBuscarCedula.Font = new System.Drawing.Font("Microsoft YaHei", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBuscarCedula.Location = new System.Drawing.Point(805, 48);
-            this.txtBuscarCedula.Name = "txtBuscarCedula";
-            this.txtBuscarCedula.Size = new System.Drawing.Size(277, 27);
-            this.txtBuscarCedula.TabIndex = 26;
-            // 
-            // BtnBuscarCedula
-            // 
-            this.BtnBuscarCedula.BackColor = System.Drawing.Color.Honeydew;
-            this.BtnBuscarCedula.Font = new System.Drawing.Font("Microsoft YaHei", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnBuscarCedula.Location = new System.Drawing.Point(1088, 45);
-            this.BtnBuscarCedula.Name = "BtnBuscarCedula";
-            this.BtnBuscarCedula.Size = new System.Drawing.Size(92, 30);
-            this.BtnBuscarCedula.TabIndex = 26;
-            this.BtnBuscarCedula.Text = "Buscar";
-            this.BtnBuscarCedula.UseVisualStyleBackColor = false;
-            this.BtnBuscarCedula.Click += new System.EventHandler(this.BtnBuscarCedula_Click);
+            this.reportesGeneralToolStripMenuItem.Name = "reportesGeneralToolStripMenuItem";
+            this.reportesGeneralToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
+            this.reportesGeneralToolStripMenuItem.Text = "Reportes General";
+            this.reportesGeneralToolStripMenuItem.Click += new System.EventHandler(this.mnuReportes_Click);
             // 
             // reportePorCarreraToolStripMenuItem
             // 
@@ -621,18 +587,66 @@
             this.perfilIndividualToolStripMenuItem.Text = "Perfil Individual";
             this.perfilIndividualToolStripMenuItem.Click += new System.EventHandler(this.perfilIndividualToolStripMenuItem_Click);
             // 
-            // reportesGeneralToolStripMenuItem
+            // mnuSalir
             // 
-            this.reportesGeneralToolStripMenuItem.Name = "reportesGeneralToolStripMenuItem";
-            this.reportesGeneralToolStripMenuItem.Size = new System.Drawing.Size(293, 24);
-            this.reportesGeneralToolStripMenuItem.Text = "Reportes General";
-            this.reportesGeneralToolStripMenuItem.Click += new System.EventHandler(this.mnuReportes_Click);
+            this.mnuSalir.Name = "mnuSalir";
+            this.mnuSalir.Size = new System.Drawing.Size(148, 24);
+            this.mnuSalir.Text = "Salir";
+            this.mnuSalir.Click += new System.EventHandler(this.mnuSalir_Click);
+            // 
+            // ayudaToolStripMenuItem
+            // 
+            this.ayudaToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuAcercaDe});
+            this.ayudaToolStripMenuItem.Name = "ayudaToolStripMenuItem";
+            this.ayudaToolStripMenuItem.Size = new System.Drawing.Size(69, 23);
+            this.ayudaToolStripMenuItem.Text = "Ayuda";
+            // 
+            // mnuAcercaDe
+            // 
+            this.mnuAcercaDe.Name = "mnuAcercaDe";
+            this.mnuAcercaDe.Size = new System.Drawing.Size(156, 24);
+            this.mnuAcercaDe.Text = "Acerca de";
+            this.mnuAcercaDe.Click += new System.EventHandler(this.mnuAcercaDe_Click);
+            // 
+            // txtBuscarCedula
+            // 
+            this.txtBuscarCedula.Font = new System.Drawing.Font("Microsoft YaHei", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBuscarCedula.Location = new System.Drawing.Point(746, 50);
+            this.txtBuscarCedula.Name = "txtBuscarCedula";
+            this.txtBuscarCedula.Size = new System.Drawing.Size(277, 27);
+            this.txtBuscarCedula.TabIndex = 26;
+            // 
+            // BtnBuscarCedula
+            // 
+            this.BtnBuscarCedula.BackColor = System.Drawing.Color.Honeydew;
+            this.BtnBuscarCedula.Font = new System.Drawing.Font("Microsoft YaHei", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnBuscarCedula.Location = new System.Drawing.Point(1047, 47);
+            this.BtnBuscarCedula.Name = "BtnBuscarCedula";
+            this.BtnBuscarCedula.Size = new System.Drawing.Size(92, 30);
+            this.BtnBuscarCedula.TabIndex = 26;
+            this.BtnBuscarCedula.Text = "Buscar";
+            this.BtnBuscarCedula.UseVisualStyleBackColor = false;
+            this.BtnBuscarCedula.Click += new System.EventHandler(this.BtnBuscarCedula_Click);
+            // 
+            // btnFormVerReportes
+            // 
+            this.btnFormVerReportes.BackColor = System.Drawing.Color.Honeydew;
+            this.btnFormVerReportes.Font = new System.Drawing.Font("Microsoft YaHei", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFormVerReportes.Location = new System.Drawing.Point(1145, 47);
+            this.btnFormVerReportes.Name = "btnFormVerReportes";
+            this.btnFormVerReportes.Size = new System.Drawing.Size(126, 30);
+            this.btnFormVerReportes.TabIndex = 27;
+            this.btnFormVerReportes.Text = "Ver Reportes";
+            this.btnFormVerReportes.UseVisualStyleBackColor = false;
+            this.btnFormVerReportes.Click += new System.EventHandler(this.btnFormVerReportes_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1283, 577);
+            this.Controls.Add(this.btnFormVerReportes);
             this.Controls.Add(this.BtnBuscarCedula);
             this.Controls.Add(this.txtBuscarCedula);
             this.Controls.Add(this.lstListaAlumnos);
@@ -715,6 +729,7 @@
         private System.Windows.Forms.ToolStripMenuItem reporteEnRangoDeFechasToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem perfilIndividualToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reportesGeneralToolStripMenuItem;
+        private System.Windows.Forms.Button btnFormVerReportes;
     }
 }
 
